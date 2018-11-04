@@ -2,15 +2,17 @@ package pokemon
 
 import (
 	"fmt"
+	"net/http"
 
+	"github.com/Boompyz/pokecord-catcher/imagecomparer"
 	"github.com/antchfx/xquery/html"
 )
 
 // Pokemon represents a pokemon
 type Pokemon struct {
-	hash uint64
-	page string
-	name string
+	image *imagecomparer.ComparedImage
+	page  string
+	name  string
 }
 
 func (p *Pokemon) resolve() error {
@@ -21,8 +23,22 @@ func (p *Pokemon) resolve() error {
 	}
 
 	picElement := htmlquery.FindOne(doc, "//table[@class=\"roundy\"]/tbody/tr/td[@colspan=\"4\"]/a[@class=\"image\"]/img")
-	picSource := htmlquery.SelectAttr(picElement, "src")
+	picSource := "https:" + htmlquery.SelectAttr(picElement, "src")
 
-	fmt.Println(picSource)
+	resp, err := http.Get(picSource)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	p.image, err = imagecomparer.NewComparedImage(resp.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
+}
+
+func (p *Pokemon) GetDistance(image *imagecomparer.ComparedImage) float64 {
+	return image.GetDistance(p.image)
 }
