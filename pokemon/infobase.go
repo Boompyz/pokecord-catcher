@@ -54,6 +54,7 @@ func (p *PokemonInfo) FillFromWeb(threadCount int) error {
 	return nil
 }
 
+// FindPokemon attempts to guess what pokemon is in the image on the url
 func (p *PokemonInfo) FindPokemon(imageURL string) string {
 	resp, err := http.Get(imageURL)
 	if err != nil {
@@ -73,6 +74,7 @@ func (p *PokemonInfo) FindPokemon(imageURL string) string {
 		}
 	}
 
+	fmt.Println(distance)
 	return bestPokemon.name
 }
 

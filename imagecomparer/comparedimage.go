@@ -29,6 +29,8 @@ func NewComparedImage(imageSource io.Reader) (*ComparedImage, error) {
 		return nil, err
 	}
 
+	m = cropImage(m)
+
 	bounds := m.Bounds()
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
@@ -74,4 +76,55 @@ func (c *ComparedImage) GetDistance(o *ComparedImage) float64 {
 	}
 
 	return distance
+}
+
+func cropImage(m image.Image) image.Image {
+	var top, left, right, bottom int
+	top, left, right, bottom = m.Bounds().Min.Y, m.Bounds().Min.X, m.Bounds().Max.X, m.Bounds().Max.Y
+
+	scanHorizontal := func(lineNumber int) bool {
+		var y = lineNumber
+		for x := m.Bounds().Min.X; x < m.Bounds().Max.X; x++ {
+			r, g, b, a := m.At(x, y).RGBA()
+			if r != 0 || g != 0 || b != 0 || a != 0 {
+				return false
+			}
+		}
+		return true
+	}
+	scanVertical := func(colNumber int) bool {
+		var x = colNumber
+		for y := m.Bounds().Min.Y; y < m.Bounds().Max.Y; y++ {
+			r, g, b, a := m.At(x, y).RGBA()
+			if r != 0 || g != 0 || b != 0 || a != 0 {
+				return false
+			}
+		}
+		return true
+	}
+
+	for scanHorizontal(top) {
+		top++
+	}
+
+	for scanHorizontal(bottom) {
+		bottom--
+	}
+
+	for scanVertical(left) {
+		left++
+	}
+
+	for scanVertical(right) {
+		right--
+	}
+
+	newImage := image.NewRGBA(image.Rect(left, top, right, bottom))
+	for y := top; y < bottom; y++ {
+		for x := left; x < right; x++ {
+			newImage.Set(x, y, m.At(x, y))
+		}
+	}
+
+	return newImage
 }
