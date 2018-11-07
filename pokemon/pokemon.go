@@ -10,9 +10,9 @@ import (
 
 // Pokemon represents a pokemon
 type Pokemon struct {
-	image *imagecomparer.ComparedImage
+	Image *imagecomparer.ComparedImage `json:"image"`
 	page  string
-	name  string
+	Name  string `json:"Name"`
 }
 
 func (p *Pokemon) resolve() error {
@@ -31,7 +31,7 @@ func (p *Pokemon) resolve() error {
 	}
 	defer resp.Body.Close()
 
-	p.image, err = imagecomparer.NewComparedImage(resp.Body)
+	p.Image, err = imagecomparer.NewComparedImage(resp.Body)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -40,5 +40,5 @@ func (p *Pokemon) resolve() error {
 }
 
 func (p *Pokemon) GetDistance(image *imagecomparer.ComparedImage) float64 {
-	return image.GetDistance(p.image)
+	return image.GetDistance(p.Image)
 }

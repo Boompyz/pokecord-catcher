@@ -15,7 +15,7 @@ const (
 
 // ComparedImage contains information about an image
 type ComparedImage struct {
-	thumbnail [thumbnailSize][thumbnailSize][3]uint32
+	Thumbnail [thumbnailSize][thumbnailSize][3]uint32 `json:"thumbnail"`
 }
 
 // NewComparedImage creates image from io.Reader and extracts info
@@ -68,7 +68,7 @@ func (c *ComparedImage) GetDistance(o *ComparedImage) float64 {
 		for x := 0; x < thumbnailSize; x++ {
 			dr := float64(0)
 			for i := 0; i < 3; i++ {
-				d := c.thumbnail[y][x][i] - o.thumbnail[y][x][i]
+				d := c.Thumbnail[y][x][i] - o.Thumbnail[y][x][i]
 				dr += float64(d * d)
 			}
 			distance += math.Sqrt(dr)

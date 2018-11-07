@@ -3,7 +3,6 @@ package pokemon
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"sync"
 
 	"github.com/Boompyz/pokecord-catcher/imagecomparer"
@@ -13,7 +12,7 @@ import (
 
 // PokemonInfo represents information about all pokemon
 type PokemonInfo struct {
-	pokemons []Pokemon
+	Pokemons []Pokemon `json:"Pokemon"`
 }
 
 // NewPokemonInfo creates a new PokemonInfo
@@ -28,14 +27,14 @@ func (p *PokemonInfo) FillFromWeb(threadCount int) error {
 	if err != nil {
 		return err
 	}
-	p.pokemons = pokemons
+	p.Pokemons = pokemons
 
 	var wg sync.WaitGroup
 	wg.Add(threadCount)
 
 	resolver := func(pi *PokemonInfo, getWork chan int) {
 		for idx := range getWork {
-			pi.pokemons[idx].resolve() // Some pokemon appear twice!
+			pi.Pokemons[idx].resolve() // Some pokemon appear twice!
 		}
 		wg.Done()
 	}
@@ -66,7 +65,7 @@ func (p *PokemonInfo) FindPokemon(imageURL string) string {
 	var bestPokemon Pokemon
 	var distance float64 = 2147483647
 
-	for _, pokemon := range p.pokemons {
+	for _, pokemon := range p.Pokemons {
 		d := pokemon.GetDistance(image)
 		if d < distance {
 			distance = d
@@ -75,7 +74,7 @@ func (p *PokemonInfo) FindPokemon(imageURL string) string {
 	}
 
 	fmt.Println(distance)
-	return bestPokemon.name
+	return bestPokemon.Name
 }
 
 func getLinksFromIndexPage(indexPage string) ([]Pokemon, error) {
@@ -85,7 +84,7 @@ func getLinksFromIndexPage(indexPage string) ([]Pokemon, error) {
 	}
 
 	links := htmlquery.Find(doc, "//div[@id=\"mw-content-text\"]/table[@align=\"center\"]/tbody/tr/td/a[@href]/img")
-	fmt.Println("Found " + strconv.Itoa(len(links)) + " pokemon!")
+	fmt.Println("Found", len(links), "pokemon!")
 	ret := make([]Pokemon, 0, len(links))
 	for _, link := range links {
 		link = link.Parent

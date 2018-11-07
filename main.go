@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,17 +16,43 @@ import (
 
 // Variables used for command line parameters
 var (
-	Token string
-	info  *pokemon.PokemonInfo
+	Token     string
+	renewData bool
+	info      *pokemon.PokemonInfo
 )
+
+func saveData() {
+
+	f, _ := os.Create("pokemoninfo.json")
+	defer f.Close()
+	jsonstring, err := json.Marshal(info)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Fprint(f, string(jsonstring))
+}
+
+func loadData() {
+	f, _ := os.Open("pokemoninfo.json")
+	defer f.Close()
+
+	jsonstring, _ := ioutil.ReadAll(f)
+	json.Unmarshal(jsonstring, info)
+}
 
 func init() {
 
 	flag.StringVar(&Token, "t", "", "Bot Token")
+	flag.BoolVar(&renewData, "r", false, "Whether to renew the data")
 	flag.Parse()
 
 	info = pokemon.NewPokemonInfo()
-	info.FillFromWeb(16)
+	if renewData {
+		info.FillFromWeb(16)
+		saveData()
+	} else {
+		loadData()
+	}
 }
 
 func main() {
